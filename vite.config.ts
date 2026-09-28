@@ -15,5 +15,10 @@ export default defineConfig({
 			// version; keep it in step with the project's Node.js setting on Vercel.
 			adapter: adapter({ runtime: 'nodejs24.x' })
 		})
-	]
+	],
+	ssr: {
+		// gsap ships ESM files without "type": "module", so Node 24 on Vercel loads them as CommonJS
+		// and the named imports fail at runtime. Bundling it into the server build avoids that.
+		noExternal: ['gsap']
+	}
 });

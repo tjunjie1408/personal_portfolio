@@ -6,6 +6,8 @@ import type { SketchKind } from './sketches';
 const github = 'https://github.com/tjunjie1408';
 
 export const site = {
+	/** Production origin, used for canonical and share links. Update it if the domain changes. */
+	url: 'https://teojunjie.vercel.app',
 	name: 'Teo Jun Jie',
 	role: 'Software engineer, AI and machine learning',
 	email: 'jasonteo1408@gmail.com',

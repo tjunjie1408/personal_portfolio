@@ -58,8 +58,17 @@
 	<link rel="icon" href={favicon} />
 	<title>{site.name} / {site.role}</title>
 	<meta name="description" content={site.description} />
+	<link rel="canonical" href="{site.url}/" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="{site.url}/" />
+	<meta property="og:site_name" content={site.name} />
 	<meta property="og:title" content="{site.name} / {site.role}" />
 	<meta property="og:description" content={site.description} />
+	<meta property="og:image" content="{site.url}/og.jpg" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="Rodin's Thinker beside the line: I build things to understand them." />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <a class="skip label" href="#main">Skip to content</a>

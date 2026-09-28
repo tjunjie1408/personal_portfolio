@@ -18,7 +18,8 @@ export default defineConfig({
 	],
 	ssr: {
 		// gsap ships ESM files without "type": "module", so Node 24 on Vercel loads them as CommonJS
-		// and the named imports fail at runtime. Bundling it into the server build avoids that.
-		noExternal: ['gsap']
+		// and the named imports fail at runtime. The Vercel packages only export under the "svelte"
+		// condition, which plain Node does not resolve. Bundling all three into the server avoids both.
+		noExternal: ['gsap', '@vercel/analytics', '@vercel/speed-insights']
 	}
 });

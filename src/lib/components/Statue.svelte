@@ -8,9 +8,6 @@
 	  scroll    pushes straight in toward the head as you leave, as if stepping into the thought
 	The cursor moves only the red light, never the camera.
 
-	variant="portrait" is the About close-up: a fixed profile of the head and the hand under the
-	chin, no dust, a slow push in as it scrolls through, and the same cursor-led red light.
-
 	Loads /models/thinker.glb (prepared by scripts/prepare-model.mjs). three.js is imported lazily
 	so it never blocks first paint; rendering pauses offscreen; reduced motion renders one still frame.
 -->
@@ -20,45 +17,19 @@
 	import { scroll } from '$lib/motion/scroll.svelte';
 	import { theme } from '$lib/theme.svelte';
 
-	type Variant = 'hero' | 'portrait';
-	type Props = { src?: string; accent?: string; variant?: Variant };
-	let { src = '/models/thinker.glb', accent = '#ff5a4a', variant = 'hero' }: Props = $props();
+	type Props = { src?: string; accent?: string };
+	let { src = '/models/thinker.glb', accent = '#ff5a4a' }: Props = $props();
 
-	// Each view is one fixed direction (AZ around the vertical axis, EL above the horizon) plus
+	// The view is one fixed direction (AZ around the vertical axis, EL above the horizon) plus
 	// distances along it. For the Rigsters scan, AZ -0.8 is straight-on. The model is normalised to
 	// 2 units tall, centred on the origin (head near y 0.75).
-	//   start: where the entrance begins   rest: where it settles   leave: where scrolling takes it
-	const VIEWS = {
-		hero: {
-			az: -1.3,
-			el: -0.04,
-			aim: { x: 0, z: 0 },
-			start: { r: 1.7, ty: 0.62 },
-			rest: { r: 4.6, ty: 0.3 },
-			leave: { r: 2.6, ty: 0.6 }
-		},
-		// Three-quarter close-up: face, ear, the hand under the chin and the back in one frame.
-		// The aim sits forward of the axis, where the head leans.
-		portrait: {
-			az: -1.55,
-			el: 0.04,
-			aim: { x: -0.24, z: 0.24 },
-			start: { r: 3.2, ty: 0.42 },
-			rest: { r: 2.15, ty: 0.54 },
-			leave: { r: 1.8, ty: 0.58 }
-		}
-	} as const;
-
-	// svelte-ignore state_referenced_locally
-	const view = VIEWS[variant];
-	const AZ: number = view.az;
-	const EL: number = view.el;
-	const aim = { ...view.aim };
-	const REST = view.rest;
-	const CLOSE = view.start;
-	const LEAVE = view.leave;
-	// svelte-ignore state_referenced_locally
-	const isHero = variant === 'hero';
+	//   CLOSE: where the entrance begins   REST: where it settles   LEAVE: where scrolling takes it
+	const AZ = -1.3;
+	const EL = -0.04;
+	const aim = { x: 0, z: 0 };
+	const CLOSE = { r: 1.7, ty: 0.62 };
+	const REST = { r: 4.6, ty: 0.3 };
+	const LEAVE = { r: 2.6, ty: 0.6 };
 
 	let host: HTMLDivElement;
 	let status = $state<'loading' | 'ready' | 'missing'>('loading');
@@ -71,7 +42,7 @@
 	});
 
 	$effect(() => {
-		if (isHero && intro.done && status === 'ready') playEntrance?.();
+		if (intro.done && status === 'ready') playEntrance?.();
 	});
 
 	onMount(() => {
@@ -129,11 +100,11 @@
 				sheenColor: new THREE.Color(0xffffff)
 			});
 
-			const dust = createDust(THREE, isHero ? (small ? 700 : 1400) : 0);
+			const dust = createDust(THREE, small ? 700 : 1400);
 			dust.material.uniforms.uPixelRatio.value = dpr;
 			// Align the dust's downstream axis with the camera's right, so the current crosses the frame.
 			dust.points.rotation.y = AZ;
-			if (isHero) scene.add(dust.points);
+			scene.add(dust.points);
 
 			applyTheme = (dark, color) => {
 				rim.color.set(color);
@@ -199,10 +170,10 @@
 			const resize = () => {
 				const { width, height } = host.getBoundingClientRect();
 				const aspect = width / Math.max(height, 1);
-				fit = isHero ? Math.max(1, 0.95 / aspect) : 1;
+				fit = Math.max(1, 0.95 / aspect);
 				renderer.setSize(width, height, false);
 				camera.aspect = aspect;
-				if (isHero && aspect < 0.95) camera.setViewOffset(width, height, 0, height * 0.2, width, height);
+				if (aspect < 0.95) camera.setViewOffset(width, height, 0, height * 0.2, width, height);
 				else camera.clearViewOffset();
 				camera.updateProjectionMatrix();
 			};
@@ -263,25 +234,13 @@
 					// Hold on the head for a breath, then pull back to the full figure.
 					.to(rig, { ...REST, duration: 4.2, ease: 'expo.inOut' }, 0.5);
 			};
-			// The hero enters with the intro curtain; the portrait enters when it is first seen.
-			let seen: IntersectionObserver | null = null;
-			if (isHero) {
-				if (intro.done) playEntrance();
-			} else {
-				seen = new IntersectionObserver(([entry]) => {
-					if (!entry.isIntersecting) return;
-					playEntrance?.();
-					seen?.disconnect();
-				}, { threshold: 0.25 });
-				seen.observe(host);
-			}
+			// Enters with the intro curtain (or at once, if the curtain has already lifted).
+			if (intro.done) playEntrance();
 
 			const leaveTween = gsap.to(leave, {
 				p: 1,
 				ease: 'none',
-				scrollTrigger: isHero
-					? { trigger: host, start: 'top top', end: 'bottom top', scrub: 1 }
-					: { trigger: host, start: 'top bottom', end: 'bottom top', scrub: 1 }
+				scrollTrigger: { trigger: host, start: 'top top', end: 'bottom top', scrub: 1 }
 			});
 
 			const onMove = (e: PointerEvent) => {
@@ -304,11 +263,9 @@
 			});
 			io.observe(host);
 
-
 			cleanup = () => {
 				cancelAnimationFrame(raf);
 				io.disconnect();
-				seen?.disconnect();
 				ro.disconnect();
 				window.removeEventListener('pointermove', onMove);
 				leaveTween.scrollTrigger?.kill();

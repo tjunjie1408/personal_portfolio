@@ -9,7 +9,7 @@ export const scroll = $state({ velocity: 0 });
 
 let lenis: Lenis | null = null;
 
-export const prefersReducedMotion = () =>
+const prefersReducedMotion = () =>
 	typeof window !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Smooth scrolling, synced to GSAP's ticker so ScrollTrigger and Lenis share one frame loop. */

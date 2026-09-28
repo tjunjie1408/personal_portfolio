@@ -4,36 +4,37 @@
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import { about } from '$lib/content';
 	import { reveal } from '$lib/motion/reveal';
-	import { theme } from '$lib/theme.svelte';
-	import Statue from '../Statue.svelte';
+	import portrait540 from '$lib/assets/portrait-540.webp';
+	import portrait1080 from '$lib/assets/portrait-1080.webp';
 
 	let frame: HTMLElement;
-	const accent = $derived(theme.current === 'dark' ? '#ff5a4a' : '#e0301f');
 
 	onMount(() => {
 		gsap.registerPlugin(ScrollTrigger);
 		const mm = gsap.matchMedia();
-		// The close-up is uncovered from below as it arrives; the camera inside does the rest.
+		// The portrait is uncovered from below as it arrives, and settles from a slight zoom.
 		mm.add('(prefers-reduced-motion: no-preference)', () => {
-			gsap.fromTo(
-				frame,
-				{ clipPath: 'inset(100% 0% 0% 0%)' },
-				{
-					clipPath: 'inset(0% 0% 0% 0%)',
-					ease: 'expo.out',
-					duration: 1.6,
-					scrollTrigger: { trigger: frame, start: 'top 80%' }
-				}
-			);
+			gsap
+				.timeline({ scrollTrigger: { trigger: frame, start: 'top 80%' }, defaults: { ease: 'expo.out' } })
+				.fromTo(frame, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6 }, 0)
+				.fromTo(frame.querySelector('img'), { scale: 1.12 }, { scale: 1, duration: 2.2 }, 0);
 		});
 		return () => mm.revert();
 	});
 </script>
 
 <section id="about" class="about wrap seam" data-field="orbit" data-label="About">
-	<!-- A close-up of the Thinker stands in for a photo. -->
 	<figure class="portrait" bind:this={frame} data-field-anchor>
-		<Statue variant="portrait" {accent} />
+		<img
+			src={portrait1080}
+			srcset="{portrait540} 540w, {portrait1080} 1080w"
+			sizes="(max-width: 767px) 100vw, 40vw"
+			width="1080"
+			height="1440"
+			alt="Teo Jun Jie in a dark suit and tie, standing against a plain wall"
+			loading="lazy"
+			decoding="async"
+		/>
 	</figure>
 
 	<div class="body">
@@ -71,7 +72,20 @@
 		aspect-ratio: 3 / 4;
 		position: relative;
 		overflow: hidden;
-		background: radial-gradient(60% 50% at 45% 42%, var(--halo), transparent 75%), var(--bg-raised);
+		background: var(--bg-raised);
+	}
+
+	/* Set in the page's greys: the warm wall of the original would clash with the palette. */
+	.portrait img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 50% 20%;
+		filter: grayscale(1) contrast(1.04);
+	}
+
+	:global([data-theme='dark']) .portrait img {
+		filter: grayscale(1) contrast(1.04) brightness(0.9);
 	}
 
 	.body {

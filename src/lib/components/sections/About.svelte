@@ -75,17 +75,18 @@
 		background: var(--bg-raised);
 	}
 
-	/* Set in the page's greys: the warm wall of the original would clash with the palette. */
+	/* In colour. The file itself is graded: the warm wall of the original is pulled most of the way
+	   to the page's neutral grey, while skin keeps its warmth. */
 	.portrait img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		object-position: 50% 20%;
-		filter: grayscale(1) contrast(1.04);
 	}
 
+	/* A touch dimmer on the dark page, so the pale wall does not glare. */
 	:global([data-theme='dark']) .portrait img {
-		filter: grayscale(1) contrast(1.04) brightness(0.9);
+		filter: brightness(0.92);
 	}
 
 	.body {

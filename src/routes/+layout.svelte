@@ -55,7 +55,10 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<!-- .ico for older browsers, SVG where supported, and an opaque PNG for iOS home screens. -->
+	<link rel="icon" href="/favicon.ico" sizes="32x32" />
+	<link rel="icon" href={favicon} type="image/svg+xml" />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 	<title>{site.name} / {site.role}</title>
 	<meta name="description" content={site.description} />
 	<link rel="canonical" href="{site.url}/" />

@@ -19,7 +19,10 @@
 			decoding="async"
 		/>
 	{:else}
-		<Sketch kind={project.sketch} />
+		<!-- Sketch sets up its drawing once on mount, so swapping projects needs a fresh one. -->
+		{#key project.sketch}
+			<Sketch kind={project.sketch} />
+		{/key}
 	{/if}
 </div>
 

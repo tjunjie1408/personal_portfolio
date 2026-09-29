@@ -1,0 +1,288 @@
+/* ---------------------------------------------------------------------------
+   Typography for rendered Markdown. Scoped to .prose because app.css resets
+   lists and margins for the portfolio's own layouts.
+   --------------------------------------------------------------------------- */
+.prose {
+	font-size: 1.0625rem;
+	line-height: 1.75;
+}
+
+.prose > * + * {
+	margin-top: 1.25em;
+}
+
+.prose :is(h2, h3, h4) {
+	font-weight: 500;
+	line-height: 1.25;
+	scroll-margin-top: 6rem;
+}
+
+.prose h2 {
+	margin-top: 2.6em;
+	font-size: 1.625rem;
+	letter-spacing: -0.025em;
+}
+
+.prose h3 {
+	margin-top: 2em;
+	font-size: 1.25rem;
+	letter-spacing: -0.015em;
+}
+
+.prose h4 {
+	margin-top: 1.75em;
+	font-size: 1.0625rem;
+}
+
+.prose :is(h2, h3, h4) + * {
+	margin-top: 0.75em;
+}
+
+.prose a {
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+	transition:
+		color 0.3s var(--ease-out),
+		text-decoration-color 0.3s var(--ease-out);
+}
+
+.prose a:hover {
+	color: var(--accent);
+	text-decoration-color: currentColor;
+}
+
+.prose strong {
+	font-weight: 600;
+}
+
+.prose :is(ul, ol) {
+	padding-left: 1.4em;
+}
+
+.prose ul {
+	list-style: disc;
+}
+
+.prose ol {
+	list-style: decimal;
+}
+
+.prose li + li,
+.prose li > :is(ul, ol) {
+	margin-top: 0.4em;
+}
+
+.prose li::marker {
+	color: var(--muted);
+}
+
+/* Obsidian task lists: - [ ] and - [x] */
+.prose li:has(> input[type='checkbox']) {
+	list-style: none;
+	margin-left: -1.4em;
+}
+
+.prose input[type='checkbox'] {
+	margin: 0 0.6em 0 0;
+	accent-color: var(--accent);
+	vertical-align: -0.1em;
+}
+
+.prose blockquote {
+	padding-left: 1.25rem;
+	border-left: 1px solid var(--ink);
+	color: var(--muted);
+}
+
+.prose blockquote > * + * {
+	margin-top: 0.75em;
+}
+
+.prose hr {
+	width: 3rem;
+	margin: 3em auto;
+	border: 0;
+	border-top: 1px solid var(--line);
+}
+
+.prose mark {
+	padding: 0.05em 0.2em;
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+	color: inherit;
+}
+
+/* Inline code. Blocks are styled below through .shiki. */
+.prose :not(pre) > code {
+	padding: 0.1em 0.35em;
+	background: var(--bg-raised);
+	font-family: var(--font-mono);
+	font-size: 0.85em;
+}
+
+/* Tables scroll on their own rather than widening the page. */
+.prose table {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	border-collapse: collapse;
+	font-size: 0.9375rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.prose :is(th, td) {
+	padding: 0.55rem 1rem 0.55rem 0;
+	border-bottom: 1px solid var(--line);
+	text-align: left;
+	vertical-align: top;
+}
+
+.prose th {
+	font-weight: 500;
+	border-bottom-color: var(--ink);
+}
+
+/* ------------------------------ Images ---------------------------------- */
+.prose .img {
+	margin-block: 2.25em;
+}
+
+.prose .img img {
+	width: 100%;
+	height: auto;
+	background: var(--bg-raised);
+}
+
+.prose .img figcaption {
+	margin-top: 0.75rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+	color: var(--muted);
+}
+
+/* ------------------------------- Code ------------------------------------ */
+.prose pre.shiki {
+	margin-bottom: 0;
+	overflow-x: auto;
+	padding-block: 1.1rem;
+	background: var(--bg-raised);
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	line-height: 1.7;
+	tab-size: 2;
+}
+
+.prose .shiki,
+.prose .shiki span {
+	color: var(--shiki-light);
+}
+
+[data-theme='dark'] .prose .shiki,
+[data-theme='dark'] .prose .shiki span {
+	color: var(--shiki-dark);
+}
+
+/* Lines are inline blocks so the newlines Shiki leaves between them break lines instead of adding
+   empty ones; the code grows past the block's width and scrolls when a line is long. */
+.prose pre.shiki code {
+	display: block;
+	min-width: max-content;
+}
+
+.prose .shiki .line {
+	display: inline-block;
+	width: 100%;
+	min-height: 1lh;
+	padding-inline: calc(1.25rem - 2px) 1.25rem;
+	border-left: 2px solid transparent;
+}
+
+/* // [!code highlight] and ```ts {2-4} */
+.prose .shiki .line.highlighted {
+	background: var(--halo);
+	border-left-color: var(--river);
+}
+
+/* // [!code ++] and // [!code --] */
+.prose .shiki .line.diff.add {
+	background: color-mix(in srgb, var(--river) 12%, transparent);
+	border-left-color: var(--river);
+}
+
+.prose .shiki .line.diff.remove {
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	border-left-color: var(--accent);
+	opacity: 0.75;
+}
+
+/* ```ts /word/ */
+.prose .shiki .highlighted-word {
+	outline: 1px solid color-mix(in srgb, var(--river) 60%, transparent);
+	outline-offset: 1px;
+}
+
+/* // [!code focus]: the other lines step back until the block is hovered. */
+.prose .shiki.has-focused .line:not(.focused) {
+	opacity: 0.35;
+	filter: blur(0.6px);
+	transition:
+		opacity 0.4s var(--ease-out),
+		filter 0.4s var(--ease-out);
+}
+
+.prose .shiki.has-focused:hover .line {
+	opacity: 1;
+	filter: none;
+}
+
+.prose figure.code pre {
+	margin: 0;
+}
+
+.prose figure.code figcaption {
+	padding: 0.55rem 1.25rem;
+	border-bottom: 1px solid var(--line);
+	background: var(--bg-raised);
+	color: var(--muted);
+}
+
+/* ------------------------------- Math ------------------------------------ */
+.prose .katex {
+	font-size: 1.08em;
+}
+
+.prose .katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+	margin-block: 1.75em;
+	padding-block: 0.25em;
+}
+
+/* ----------------------------- Callouts ---------------------------------- */
+.prose .callout {
+	--tone: var(--river);
+	padding: 1rem 1.25rem;
+	border-left: 2px solid var(--tone);
+	background: color-mix(in srgb, var(--tone) 6%, var(--bg-raised));
+}
+
+.prose .callout[data-tone='accent'] {
+	--tone: var(--accent);
+}
+
+.prose .callout[data-tone='plain'] {
+	--tone: var(--ink);
+	background: var(--bg-raised);
+}
+
+.prose .callout > * + * {
+	margin-top: 0.6em;
+}
+
+.prose .callout-title {
+	font-weight: 500;
+	color: var(--tone);
+}
+
+.prose .callout[data-tone='plain'] .callout-title {
+	color: var(--ink);
+}

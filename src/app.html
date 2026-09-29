@@ -6,7 +6,7 @@
 		<meta name="text-scale" content="scale" />
 		<script>
 			// Runs before paint: marks JS as available, resolves the theme, and decides whether
-			// the intro plays (once per browser session, never under reduced motion).
+			// the intro plays (once per browser session, never under reduced motion or on the blog).
 			(function () {
 				var d = document.documentElement;
 				d.classList.add('js');
@@ -23,7 +23,9 @@
 				try {
 					seen = sessionStorage.getItem('intro-seen') === '1';
 				} catch (e) {}
-				if (!reduce && !seen) d.dataset.intro = '';
+				// Someone arriving at a post came to read it: no curtain on the blog.
+				var reading = location.pathname.indexOf('/blog') === 0;
+				if (!reduce && !seen && !reading) d.dataset.intro = '';
 			})();
 		</script>
 		%sveltekit.head%

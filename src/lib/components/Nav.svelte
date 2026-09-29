@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import DecryptedText from './svelte-bits/DecryptedText.svelte';
@@ -7,6 +8,11 @@
 	import { theme, toggleTheme } from '$lib/theme.svelte';
 	import { intro } from '$lib/motion/intro.svelte';
 	import { lockScroll } from '$lib/motion/scroll.svelte';
+
+	// Section anchors only exist on the home page; elsewhere they lead back to it.
+	const home = $derived(page.url.pathname === '/');
+	const to = (href: string) => (href.startsWith('#') && !home ? `/${href}` : href);
+	const here = (href: string) => (href.startsWith('/') && page.url.pathname.startsWith(href) ? 'page' : undefined);
 
 	let hovered = $state(-1);
 	let hidden = $state(false);
@@ -45,12 +51,13 @@
 
 <header class="nav" class:hidden={hidden && !open} class:ready={intro.done}>
 	<div class="bar wrap">
-		<a href="#top" class="name" onclick={() => setMenu(false)}>{site.name}</a>
+		<a href={home ? '#top' : '/'} class="name" onclick={() => setMenu(false)}>{site.name}</a>
 
 		<nav class="links" aria-label="Primary">
 			{#each nav as item, i (item.href)}
 				<a
-					href={item.href}
+					href={to(item.href)}
+					aria-current={here(item.href)}
 					class="mono"
 					onmouseenter={() => (hovered = i)}
 					onmouseleave={() => (hovered = -1)}
@@ -75,7 +82,7 @@
 	<nav class="wrap" aria-label="Mobile">
 		{#each nav as item (item.href)}
 			<span class="line-mask">
-				<a class="menu-link line" href={item.href} onclick={() => setMenu(false)}>{item.label}</a>
+				<a class="menu-link line" href={to(item.href)} aria-current={here(item.href)} onclick={() => setMenu(false)}>{item.label}</a>
 			</span>
 		{/each}
 	</nav>
@@ -145,7 +152,8 @@
 		transition: transform 0.6s var(--ease-out);
 	}
 
-	.links a:hover::after {
+	.links a:hover::after,
+	.links a[aria-current='page']::after {
 		transform: scaleX(1);
 		transform-origin: left;
 	}

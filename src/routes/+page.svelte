@@ -10,9 +10,12 @@
 	import Toolkit from '$lib/components/sections/Toolkit.svelte';
 	import Contact from '$lib/components/sections/Contact.svelte';
 	import CaseStudy from '$lib/components/CaseStudy.svelte';
-	import { projects } from '$lib/content';
+	import Seo from '$lib/components/Seo.svelte';
+	import { projects, site } from '$lib/content';
 	import { caseStudy } from '$lib/case.svelte';
 </script>
+
+<Seo title="{site.name} / {site.role}" path="/" />
 
 <Hero />
 <Premise />

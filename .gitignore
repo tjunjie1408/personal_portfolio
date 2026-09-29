@@ -21,3 +21,9 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Obsidian: keep the vault settings the blog relies on, not personal workspace state
+content/.obsidian/*
+!content/.obsidian/app.json
+!content/.obsidian/templates.json
+content/.trash

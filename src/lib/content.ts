@@ -22,7 +22,8 @@ export const nav = [
 	{ label: 'Education', href: '#education' },
 	{ label: 'Experience', href: '#experience' },
 	{ label: 'Work', href: '#work' },
-	{ label: 'Toolkit', href: '#toolkit' }
+	{ label: 'Toolkit', href: '#toolkit' },
+	{ label: 'Writing', href: '/blog' }
 ];
 
 export const hero = {

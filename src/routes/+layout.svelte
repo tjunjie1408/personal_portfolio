@@ -6,6 +6,7 @@
 	import '../app.css';
 
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import favicon from '$lib/assets/favicon.svg';
@@ -26,7 +27,6 @@
 		gsap.registerPlugin(ScrollTrigger);
 		syncTheme();
 		const stopScroll = initSmoothScroll();
-		const stopField = watchField();
 
 		// Reading position, as a hairline across the top (touch screens; fine pointers get the rail).
 		const progress = gsap.to(bar, {
@@ -56,6 +56,14 @@
 			stopField();
 		};
 	});
+
+	// Each page brings its own sections: re-read which modes they ask for and where they sit.
+	let stopField = () => {};
+	afterNavigate(() => {
+		stopField();
+		stopField = watchField();
+		requestAnimationFrame(() => ScrollTrigger.refresh());
+	});
 </script>
 
 <svelte:head>
@@ -63,19 +71,7 @@
 	<link rel="icon" href="/favicon.ico" sizes="32x32" />
 	<link rel="icon" href={favicon} type="image/svg+xml" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-	<title>{site.name} / {site.role}</title>
-	<meta name="description" content={site.description} />
-	<link rel="canonical" href="{site.url}/" />
-	<meta property="og:type" content="website" />
-	<meta property="og:url" content="{site.url}/" />
-	<meta property="og:site_name" content={site.name} />
-	<meta property="og:title" content="{site.name} / {site.role}" />
-	<meta property="og:description" content={site.description} />
-	<meta property="og:image" content="{site.url}/og.jpg" />
-	<meta property="og:image:width" content="1200" />
-	<meta property="og:image:height" content="630" />
-	<meta property="og:image:alt" content="Rodin's Thinker beside the line: I build things to understand them." />
-	<meta name="twitter:card" content="summary_large_image" />
+	<link rel="alternate" type="application/rss+xml" title="{site.name} / Writing" href="/rss.xml" />
 </svelte:head>
 
 <a class="skip label" href="#main">Skip to content</a>

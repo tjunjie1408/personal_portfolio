@@ -233,6 +233,8 @@ export const projects: Project[] = [
 
 export type Credential = {
 	date: string;
+	/** Set large beside the entry; defaults to `date`. Keep it short: a year or a span. */
+	numeral?: string;
 	kind: 'Education' | 'Award';
 	title: string;
 	org: string;
@@ -240,10 +242,12 @@ export type Credential = {
 	summary: string;
 };
 
-// Education and awards, oldest first. The first entry is shown as the lead card.
+// Education and awards, oldest first. Each entry owns one stretch of the integral in the
+// Education stage, so adding an entry adds a stretch; nothing else needs to change.
 export const education: Credential[] = [
 	{
 		date: 'May 2024',
+		numeral: '2024',
 		kind: 'Education',
 		title: 'Specialised Software Engineering, ICT',
 		org: 'Asia Pacific University, Bukit Jalil',
@@ -252,6 +256,7 @@ export const education: Credential[] = [
 	},
 	{
 		date: '2024/25',
+		numeral: '24/25',
 		kind: 'Award',
 		title: 'Champion, UM Integral Bee',
 		org: 'Limit Doesn’t Exist, University of Malaya',
@@ -259,6 +264,7 @@ export const education: Credential[] = [
 	},
 	{
 		date: '2025/26',
+		numeral: '25/26',
 		kind: 'Award',
 		title: 'Champion, UM Integral Bee, again',
 		org: 'Limit Doesn’t Exist, University of Malaya',

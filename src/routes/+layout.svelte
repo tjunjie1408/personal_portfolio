@@ -14,6 +14,7 @@
 	import Nav from '$lib/components/Nav.svelte';
 	import ScrollRail from '$lib/components/ScrollRail.svelte';
 	import { site } from '$lib/content';
+	import { watchField } from '$lib/motion/field.svelte';
 	import { initSmoothScroll, scrollToTarget } from '$lib/motion/scroll.svelte';
 	import { syncTheme } from '$lib/theme.svelte';
 
@@ -24,6 +25,7 @@
 		gsap.registerPlugin(ScrollTrigger);
 		syncTheme();
 		const stopScroll = initSmoothScroll();
+		const stopField = watchField();
 
 		// Reading position, as a hairline across the top (touch screens; fine pointers get the rail).
 		const progress = gsap.to(bar, {
@@ -50,6 +52,7 @@
 			progress.scrollTrigger?.kill();
 			progress.kill();
 			stopScroll();
+			stopField();
 		};
 	});
 </script>

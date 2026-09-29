@@ -6,7 +6,7 @@
 	  current        Opening      drifting downstream, as the river under the statue
 	  sediment       Premise      the current slows and the dust settles
 	  lattice        Principles   reason: every mote finds its place on a grid
-	                 Education    the same grid, behind the grid of cards
+	  rise           Education    motes lift slowly, the opposite of the fall that follows
 	  stream         Work         streaks that race sideways with the horizontal pan
 	  split          Quotes       two currents in opposite directions, like the two marquees
 	  orbit          About        a slow turn around the portrait
@@ -19,29 +19,18 @@
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { field, MODES, type Mode } from '$lib/motion/field.svelte';
 	import { scroll } from '$lib/motion/scroll.svelte';
 	import { theme } from '$lib/theme.svelte';
 
 	let canvas: HTMLCanvasElement;
-
-	const MODES = [
-		'current',
-		'sediment',
-		'lattice',
-		'stream',
-		'split',
-		'orbit',
-		'fall',
-		'constellation',
-		'gather'
-	] as const;
-	type Mode = (typeof MODES)[number];
 
 	/** How much of the field shows accent and river motes, and how bright it is, per mode. */
 	const LOOK: Record<Mode, { accent: number; river: number; alpha: number }> = {
 		current: { accent: 0.05, river: 0.05, alpha: 1 },
 		sediment: { accent: 0.03, river: 0.04, alpha: 0.75 },
 		lattice: { accent: 0.04, river: 0.03, alpha: 1.15 },
+		rise: { accent: 0.03, river: 0.14, alpha: 0.7 },
 		stream: { accent: 0.06, river: 0.08, alpha: 1 },
 		split: { accent: 0.2, river: 0.2, alpha: 1 },
 		orbit: { accent: 0.1, river: 0.04, alpha: 0.95 },
@@ -136,26 +125,6 @@
 		resize();
 		window.addEventListener('resize', resize);
 
-		// The section crossing the middle of the viewport owns the field.
-		const io = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (!entry.isIntersecting) continue;
-					const el = entry.target as HTMLElement;
-					const mode = el.dataset.field as Mode;
-					if (!MODES.includes(mode) || mode === active) continue;
-					active = mode;
-					anchor = el.querySelector<HTMLElement>('[data-field-anchor]');
-					if (mode === 'lattice') assignLattice();
-				}
-			},
-			{ rootMargin: '-50% 0px -50% 0px' }
-		);
-		// Sections render in the page, which may mount after this layout-level component.
-		const observe = requestAnimationFrame(() =>
-			document.querySelectorAll('[data-field]').forEach((el) => io.observe(el))
-		);
-
 		const onPointer = (e: PointerEvent) => {
 			pointer.x = e.clientX;
 			pointer.y = e.clientY;
@@ -185,6 +154,11 @@
 		const tick = (t: number) => {
 			const dt = Math.min((t - last) / 1000, 0.05);
 			last = t;
+			if (field.mode !== active) {
+				active = field.mode;
+				anchor = field.anchor;
+				if (active === 'lattice') assignLattice();
+			}
 			const secs = t / 1000;
 			const colours = COLOURS[theme.current === 'dark' ? 'dark' : 'light'];
 			const dark = theme.current === 'dark';
@@ -228,6 +202,7 @@
 				add(w.current, 8 + 16 * m.z, sway * 4);
 				add(w.sediment, Math.sin(secs * 0.3 + m.phase) * 3, 5 + 8 * m.z);
 				add(w.lattice, clamp((m.gx - m.x) * 1.6, -220, 220), clamp((m.gy - m.y) * 1.6, -220, 220));
+				add(w.rise, sway * 6, -(8 + 18 * m.z));
 				add(w.stream, clamp(-(20 + 60 * m.z) - v * m.z * 38, -1600, 1600), 0);
 				add(w.split, (m.y < height / 2 ? 1 : -1) * (24 + 50 * m.z), sway * 3);
 				if (w.orbit > 0.001) {
@@ -339,8 +314,6 @@
 
 		return () => {
 			cancelAnimationFrame(raf);
-			cancelAnimationFrame(observe);
-			io.disconnect();
 			window.removeEventListener('resize', resize);
 			window.removeEventListener('pointermove', onPointer);
 			document.removeEventListener('visibilitychange', onVisibility);

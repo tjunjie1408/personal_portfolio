@@ -10,6 +10,7 @@
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import favicon from '$lib/assets/favicon.svg';
 	import Drift from '$lib/components/Drift.svelte';
+	import Flow from '$lib/components/Flow.svelte';
 	import Intro from '$lib/components/Intro.svelte';
 	import Nav from '$lib/components/Nav.svelte';
 	import ScrollRail from '$lib/components/ScrollRail.svelte';
@@ -78,6 +79,7 @@
 </svelte:head>
 
 <a class="skip label" href="#main">Skip to content</a>
+<Flow />
 <Drift />
 <span class="progress" bind:this={bar} aria-hidden="true"></span>
 <ScrollRail />

@@ -39,11 +39,14 @@ export function lockScroll(locked: boolean) {
 	document.documentElement.style.overflow = locked ? 'hidden' : '';
 }
 
-/** `follow` tracks a moving target (dragging the scroll rail) instead of running a timed glide. */
-export function scrollToTarget(target: string | number, { follow = false } = {}) {
+/**
+ * `follow` tracks a moving target (dragging the scroll rail) instead of running a timed glide.
+ * `offset` shifts where a target lands; without Lenis, the target's scroll-margin does that job.
+ */
+export function scrollToTarget(target: string | number, { follow = false, offset = 0 } = {}) {
 	if (lenis) {
-		if (follow) lenis.scrollTo(target, { lerp: 0.25 });
-		else lenis.scrollTo(target, { duration: 1.6, easing: (t) => 1 - Math.pow(1 - t, 4) });
+		if (follow) lenis.scrollTo(target, { lerp: 0.25, offset });
+		else lenis.scrollTo(target, { offset, duration: 1.6, easing: (t) => 1 - Math.pow(1 - t, 4) });
 		return;
 	}
 	if (typeof target === 'number') window.scrollTo({ top: target });

@@ -18,9 +18,10 @@ export const site = {
 
 export const nav = [
 	{ label: 'Principles', href: '#principles' },
-	{ label: 'Work', href: '#work' },
 	{ label: 'About', href: '#about' },
-	{ label: 'Roadmap', href: '#roadmap' },
+	{ label: 'Education', href: '#education' },
+	{ label: 'Experience', href: '#experience' },
+	{ label: 'Work', href: '#work' },
 	{ label: 'Toolkit', href: '#toolkit' }
 ];
 
@@ -230,13 +231,50 @@ export const projects: Project[] = [
 	}
 ];
 
-export type Stage = {
+export type Credential = {
 	date: string;
-	kind: 'Education' | 'Award' | 'Community' | 'Work' | 'Research';
+	kind: 'Education' | 'Award';
+	title: string;
+	org: string;
+	/** **Double asterisks** mark the figure. */
+	summary: string;
+};
+
+// Education and awards, oldest first. The first entry is shown as the lead card.
+export const education: Credential[] = [
+	{
+		date: 'May 2024',
+		kind: 'Education',
+		title: 'Specialised Software Engineering, ICT',
+		org: 'Asia Pacific University, Bukit Jalil',
+		summary:
+			'Began a degree specialising in AI and systems programming. **CGPA 3.6** of 4.0, with a **20% merit scholarship**.'
+	},
+	{
+		date: '2024/25',
+		kind: 'Award',
+		title: 'Champion, UM Integral Bee',
+		org: 'Limit Doesn’t Exist, University of Malaya',
+		summary: '**First place** in a university calculus competition.'
+	},
+	{
+		date: '2025/26',
+		kind: 'Award',
+		title: 'Champion, UM Integral Bee, again',
+		org: 'Limit Doesn’t Exist, University of Malaya',
+		summary: '**First place** for the second year running.'
+	}
+];
+
+export type Stage = {
+	/** Anchor for links from elsewhere on the page, e.g. `#experience-g2g`. */
+	id: string;
+	date: string;
+	kind: 'Community' | 'Work' | 'Research';
 	title: string;
 	org: string;
 	summary: string;
-	/** Present tense: shown with a live marker on the roadmap. */
+	/** Present tense: shown with a live marker on the timeline. */
 	now?: boolean;
 	/** Starts expanded. */
 	open?: boolean;
@@ -244,30 +282,10 @@ export type Stage = {
 	tools?: string[];
 };
 
-// The life roadmap, oldest first, the way a river runs.
-export const roadmap: Stage[] = [
+// Experience, oldest first, the way a river runs.
+export const experience: Stage[] = [
 	{
-		date: 'May 2024',
-		kind: 'Education',
-		title: 'Specialised Software Engineering, ICT',
-		org: 'Asia Pacific University, Bukit Jalil',
-		summary: 'Began a degree specialising in AI and systems programming. CGPA 3.6 of 4.0, with a 20% merit scholarship.'
-	},
-	{
-		date: '2024/25',
-		kind: 'Award',
-		title: 'Champion, UM Integral Bee',
-		org: 'Limit Doesn’t Exist, University of Malaya',
-		summary: 'First place in a university calculus competition.'
-	},
-	{
-		date: '2025/26',
-		kind: 'Award',
-		title: 'Champion, UM Integral Bee, again',
-		org: 'Limit Doesn’t Exist, University of Malaya',
-		summary: 'First place for the second year running.'
-	},
-	{
+		id: 'experience-gdg',
 		date: 'Dec 2025',
 		kind: 'Community',
 		title: 'AI Department Trainee',
@@ -281,6 +299,7 @@ export const roadmap: Stage[] = [
 		tools: ['Rust']
 	},
 	{
+		id: 'experience-g2g',
 		date: 'May 2026',
 		kind: 'Work',
 		title: 'Software Engineer Intern',
@@ -297,6 +316,7 @@ export const roadmap: Stage[] = [
 		tools: ['Python', 'TypeScript', 'YOLO', 'ONNX', 'MediaPipe', 'Vision-language models']
 	},
 	{
+		id: 'experience-ai-club',
 		date: 'Jul 2026',
 		kind: 'Research',
 		title: 'Research and Development Team Member',
@@ -306,8 +326,8 @@ export const roadmap: Stage[] = [
 	}
 ];
 
-// Where the roadmap ends: not a stage, an open question.
-export const roadmapEnd = { date: 'Next', title: 'Not yet written.', summary: 'The river keeps moving.' };
+// Where the experience timeline ends: not a stage, an open question.
+export const experienceEnd = { date: 'Next', title: 'Not yet written.', summary: 'The river keeps moving.' };
 
 // Condensed skills. Selecting one shows the projects, and any role, that used it.
 export const toolkit = [

@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    Tokens. Reason is the neutral palette; passion is the accent (vermilion).
    The river (time, flux) gets one cool hue, used only as a small touch: the
-   roadmap's current, the scroll rail, section seams, a few motes. Zero radius.
+   experience timeline's current, the scroll rail, section seams, a few motes. Zero radius.
    --------------------------------------------------------------------------- */
 :root {
 	--bg: #eeeeec;

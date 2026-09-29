@@ -1,5 +1,5 @@
 <!--
-	The life roadmap, drawn as a river. The line meanders from stage to stage and is drawn as you
+	Experience, drawn as a river. The line meanders from stage to stage and is drawn as you
 	scroll; each stage lights up the moment the current reaches it. It ends on an open node,
 	because no one steps in the same river twice and the next stretch is not written yet.
 -->
@@ -7,7 +7,7 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-	import { roadmap, roadmapEnd } from '$lib/content';
+	import { experience, experienceEnd } from '$lib/content';
 	import { reveal } from '$lib/motion/reveal';
 	import Figure from '../Figure.svelte';
 
@@ -17,7 +17,7 @@
 	let svgHeight = $state(0);
 
 	// The richest stage starts open; the others open on request.
-	let open = $state(new Set(roadmap.flatMap((s, i) => (s.open ? [i] : []))));
+	let open = $state(new Set(experience.flatMap((s, i) => (s.open ? [i] : []))));
 
 	function toggle(i: number) {
 		const next = new Set(open);
@@ -80,16 +80,19 @@
 				}
 			})
 		];
-		// Active from the moment the current reaches a node until the end of the page, so the class
-		// follows scroll position and survives fast jumps (anchor links, restored scroll).
+		// Passed once the current reaches a node, and only un-passed by scrolling back above it, so
+		// the state follows scroll position and survives fast jumps (anchor links, restored scroll).
+		// Nothing depends on where the page ends, which the Work pin further down would shift.
 		track.querySelectorAll<HTMLElement>('.stage').forEach((stage) => {
+			const set = (on: boolean) => () => stage.classList.toggle('passed', on);
 			triggers.push(
 				ScrollTrigger.create({
 					trigger: stage.querySelector('.node'),
 					start: 'center 65%',
-					endTrigger: document.documentElement,
-					end: 'bottom bottom',
-					toggleClass: { targets: stage, className: 'passed' }
+					end: 'max',
+					onEnter: set(true),
+					onLeaveBack: set(false),
+					onRefresh: (self) => stage.classList.toggle('passed', self.progress > 0)
 				})
 			);
 		});
@@ -101,10 +104,10 @@
 	});
 </script>
 
-<section id="roadmap" class="roadmap wrap seam" aria-labelledby="roadmap-title" data-field="fall" data-label="Roadmap">
+<section id="experience" class="experience wrap seam" aria-labelledby="experience-title" data-field="fall" data-label="Experience">
 	<header class="head">
-		<h2 id="roadmap-title" class="heading" data-reveal="lines" use:reveal>
-			<span class="line-mask"><span class="line">Roadmap</span></span>
+		<h2 id="experience-title" class="heading" data-reveal="lines" use:reveal>
+			<span class="line-mask"><span class="line">Experience</span></span>
 		</h2>
 		<p class="lede" data-reveal use:reveal={{ delay: 150 }}>
 			Every stage below happened once, and will not happen the same way again.
@@ -115,7 +118,7 @@
 		<svg class="river" width="100%" height={svgHeight} aria-hidden="true">
 			<!-- The current is river-coloured and warms into the accent as it reaches the present. -->
 			<defs>
-				<linearGradient id="roadmap-current" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={svgHeight}>
+				<linearGradient id="experience-current" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={svgHeight}>
 					<stop offset="0" style="stop-color: var(--river)" />
 					<stop offset="0.62" style="stop-color: var(--river)" />
 					<stop offset="0.9" style="stop-color: var(--accent)" />
@@ -126,8 +129,8 @@
 		</svg>
 
 		<ol class="stages">
-			{#each roadmap as stage, i (stage.title)}
-				<li class="stage" class:now={stage.now}>
+			{#each experience as stage, i (stage.id)}
+				<li class="stage" class:now={stage.now} id={stage.id}>
 					<p class="when">
 						<span class="date mono">{stage.date}</span>
 						<span class="kind label">{stage.kind}</span>
@@ -162,11 +165,11 @@
 			{/each}
 
 			<li class="stage end">
-				<p class="when"><span class="date mono">{roadmapEnd.date}</span></p>
+				<p class="when"><span class="date mono">{experienceEnd.date}</span></p>
 				<span class="node" aria-hidden="true"></span>
 				<div class="content" data-reveal use:reveal>
-					<h3 class="title">{roadmapEnd.title}</h3>
-					<p class="summary">{roadmapEnd.summary}</p>
+					<h3 class="title">{experienceEnd.title}</h3>
+					<p class="summary">{experienceEnd.summary}</p>
 				</div>
 			</li>
 		</ol>
@@ -174,7 +177,7 @@
 </section>
 
 <style>
-	.roadmap {
+	.experience {
 		padding-block: clamp(6rem, 14vh, 9rem);
 	}
 
@@ -219,7 +222,7 @@
 	}
 
 	.flow {
-		stroke: url(#roadmap-current);
+		stroke: url(#experience-current);
 	}
 
 	.stages {
@@ -233,6 +236,8 @@
 		grid-template-columns: var(--date-col) var(--node-col) minmax(0, 8fr);
 		align-items: start;
 		column-gap: clamp(1rem, 3vw, 2.5rem);
+		/* Room for the nav when a stage is jumped to (Toolkit links here). */
+		scroll-margin-top: 6rem;
 	}
 
 	/* Metadata column: when, what kind, and whether it is still running. */

@@ -1,20 +1,36 @@
 <!--
 	Skills, tied to evidence. Hover (or tap) a tool and the projects that used it rise into view,
-	large and in full contrast. A tool with no project yet falls back to the role that used it.
+	large and in full contrast; each one opens its case study. A tool with no project yet falls
+	back to the role that used it, which links down to that role in Experience.
 -->
 <script lang="ts">
-	import { projects, roadmap, toolkit } from '$lib/content';
+	import { experience, projects, toolkit } from '$lib/content';
+	import { caseStudy } from '$lib/case.svelte';
 	import { reveal } from '$lib/motion/reveal';
+	import { scrollToTarget } from '$lib/motion/scroll.svelte';
 
-	const roles = roadmap.filter((s) => s.tools?.length);
+	const roles = experience.filter((s) => s.tools?.length);
 
 	let active = $state('Rust');
 
-	const shown = $derived.by(() => {
-		const hits = projects.filter((p) => p.tools.includes(active)).map((p) => p.title);
+	type Evidence =
+		| { kind: 'project'; name: string; index: number }
+		| { kind: 'role'; name: string; id: string };
+
+	const shown = $derived.by((): Evidence[] => {
+		const hits = projects.flatMap((p, index) =>
+			p.tools.includes(active) ? [{ kind: 'project' as const, name: p.title, index }] : []
+		);
 		if (hits.length) return hits;
-		return roles.filter((r) => r.tools!.includes(active)).map((r) => `${r.title}, ${r.org.split(',')[0]}`);
+		return roles
+			.filter((r) => r.tools!.includes(active))
+			.map((r) => ({ kind: 'role' as const, name: `${r.title}, ${r.org.split(',')[0]}`, id: r.id }));
 	});
+
+	function goToRole(e: MouseEvent, id: string) {
+		e.preventDefault();
+		scrollToTarget(`#${id}`, { offset: -96 });
+	}
 </script>
 
 <section id="toolkit" class="toolkit wrap seam" aria-labelledby="toolkit-title" data-field="constellation" data-label="Toolkit">
@@ -23,11 +39,26 @@
 	</h2>
 
 	<div class="side" aria-live="polite">
-		<p class="picked label">{active}</p>
+		<p class="picked label">
+			<span>{active}</span>
+			<span class="hint">{shown[0]?.kind === 'role' ? 'Jump to the role' : 'Open one to read the case'}</span>
+		</p>
 		{#key active}
 			<ul class="shown">
-				{#each shown as name, i (name)}
-					<li style:--i={i}>{name}</li>
+				{#each shown as item, i (item.name)}
+					<li style:--i={i}>
+						{#if item.kind === 'project'}
+							<button class="hit" onclick={() => (caseStudy.index = item.index)} aria-haspopup="dialog">
+								<span class="name">{item.name}</span>
+								<span class="go" aria-hidden="true">→</span>
+							</button>
+						{:else}
+							<a class="hit" href="#{item.id}" onclick={(e) => goToRole(e, item.id)}>
+								<span class="name">{item.name}</span>
+								<span class="go" aria-hidden="true">↓</span>
+							</a>
+						{/if}
+					</li>
 				{/each}
 			</ul>
 		{/key}
@@ -90,7 +121,14 @@
 	}
 
 	.picked {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
 		color: var(--accent);
+	}
+
+	.hint {
+		color: var(--muted);
 	}
 
 	.shown {
@@ -119,6 +157,52 @@
 		height: 0.42em;
 		background: var(--accent);
 		transform: rotate(45deg) scale(0.7);
+		transition: transform 0.5s var(--ease-out);
+	}
+
+	/*
+		Each name is a row that opens its evidence. The arrow is always shown, so the rows read as
+		links on touch screens too; hover slides it along and warms the name.
+	*/
+	.hit {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		width: 100%;
+		padding-bottom: 0.5rem;
+		border-bottom: 1px solid var(--line);
+		text-align: left;
+		transition:
+			color 0.4s var(--ease-out),
+			border-color 0.4s var(--ease-out);
+	}
+
+	.go {
+		flex: none;
+		font-size: 0.6em;
+		color: var(--accent);
+		transition: transform 0.5s var(--ease-out);
+	}
+
+	.hit:hover,
+	.hit:focus-visible {
+		color: var(--accent);
+		border-color: var(--accent);
+	}
+
+	button.hit:hover .go,
+	button.hit:focus-visible .go {
+		transform: translateX(0.3em);
+	}
+
+	a.hit:hover .go,
+	a.hit:focus-visible .go {
+		transform: translateY(0.2em);
+	}
+
+	.shown li:has(.hit:hover)::before {
+		transform: rotate(45deg) scale(1);
 	}
 
 	@keyframes rise {

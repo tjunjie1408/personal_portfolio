@@ -8,12 +8,11 @@
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import { projects } from '$lib/content';
+	import { caseStudy } from '$lib/case.svelte';
 	import { reveal } from '$lib/motion/reveal';
-	import CaseStudy from '../CaseStudy.svelte';
 	import Cover from '../Cover.svelte';
 
 	let root: HTMLElement;
-	let open = $state(-1);
 	let track: HTMLDivElement;
 
 	onMount(() => {
@@ -70,7 +69,7 @@
 
 		{#each projects as project, i (project.title)}
 			<article class="card" class:low={i % 2 === 1} data-reveal use:reveal>
-				<button class="card-link" onclick={() => (open = i)} aria-haspopup="dialog">
+				<button class="card-link" onclick={() => (caseStudy.index = i)} aria-haspopup="dialog">
 					<figure class="media">
 						<span class="drift"><Cover {project} /></span>
 					</figure>
@@ -85,8 +84,6 @@
 		{/each}
 	</div>
 </section>
-
-<CaseStudy {projects} index={open} onchange={(i) => (open = i)} />
 
 <style>
 	.work {

@@ -6,10 +6,11 @@
 	  current        Opening      drifting downstream, as the river under the statue
 	  sediment       Premise      the current slows and the dust settles
 	  lattice        Principles   reason: every mote finds its place on a grid
+	                 Education    the same grid, behind the grid of cards
 	  stream         Work         streaks that race sideways with the horizontal pan
 	  split          Quotes       two currents in opposite directions, like the two marquees
 	  orbit          About        a slow turn around the portrait
-	  fall           Roadmap      the river runs down the page with the timeline
+	  fall           Experience   the river runs down the page with the timeline
 	  constellation  Toolkit      near motes link up, and link to the pointer
 	  gather         Contact      the dust closes in around the pointer, or the button
 

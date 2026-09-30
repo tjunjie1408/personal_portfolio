@@ -10,8 +10,10 @@ export interface Post {
 	/** YYYY-MM-DD */
 	date: string;
 	updated?: string;
-	/** From front matter, or the opening of the text for notes. */
+	/** From front matter, or the opening of the text for notes. Plain text; formulas as TeX. */
 	description: string;
+	/** The same summary as HTML, formulas rendered by KaTeX. */
+	summary: string;
 	tags: string[];
 	draft: boolean;
 	minutes: number;

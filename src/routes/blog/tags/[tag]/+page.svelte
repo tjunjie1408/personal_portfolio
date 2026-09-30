@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { liveContent } from '$lib/blog/live';
 	import PostList from '$lib/components/blog/PostList.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { site } from '$lib/content';
 
 	let { data } = $props();
+	liveContent();
 </script>
 
 <Seo

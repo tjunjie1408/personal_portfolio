@@ -152,6 +152,31 @@
 	background: var(--bg-raised);
 }
 
+/* draw.io diagrams (.drawio.svg): drawn for the light theme, shown at the size they were drawn. */
+.prose .diagram img {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	margin-inline: auto;
+	background: none;
+}
+
+/* An <img> can't see data-theme, so dark mode inverts the drawing; hue-rotate turns colours back. */
+:root[data-theme='dark'] .prose .diagram img {
+	filter: invert(1) hue-rotate(180deg);
+}
+
+/* Phones: shrinking a wide diagram makes its labels unreadable, so it keeps its size and scrolls. */
+@media (max-width: 767px) {
+	.prose .diagram .scroll {
+		overflow-x: auto;
+	}
+
+	.prose .diagram img {
+		max-width: none;
+	}
+}
+
 .prose .img figcaption {
 	margin-top: 0.75rem;
 	font-size: 0.875rem;

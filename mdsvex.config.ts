@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { bundledLanguages, createHighlighter } from 'shiki';
 import { fileURLToPath } from 'node:url';
+import { parseYaml } from './src/lib/blog/frontmatter.ts';
 import { rehypeCallouts, rehypeEscapeBraces, rehypeHeadings, rehypeMark, rehypeUnwrapImages } from './src/lib/blog/rehype.ts';
 
 const layout = fileURLToPath(new URL('./src/lib/components/blog/Markdown.svelte', import.meta.url));
@@ -35,6 +36,8 @@ async function options(): Promise<MdsvexOptions> {
 
 	return {
 		extensions: ['.md'],
+		// Shared with the draft filter and the index (src/lib/blog/frontmatter.ts).
+		frontmatter: { type: 'yaml', marker: '-', parse: (yaml) => parseYaml(yaml) },
 		// Only used to swap in components for plain elements (images); it renders no chrome itself.
 		layout,
 		smartypants: { dashes: 'oldschool' },

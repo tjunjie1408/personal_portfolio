@@ -3,9 +3,12 @@ import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { markdown } from './mdsvex.config.ts';
+import { blogContent } from './src/lib/blog/vite.ts';
 
 export default defineConfig({
 	plugins: [
+		// Which posts reach the bundle: all of content/ in dev, published posts only in a build.
+		blogContent(),
 		// Must come before sveltekit() so <enhanced:img> is compiled before Svelte sees it.
 		enhancedImages(),
 		sveltekit({
@@ -25,6 +28,11 @@ export default defineConfig({
 				// Any other route that the crawler misses still fails the build.
 				handleUnseenRoutes: ({ routes, message }) => {
 					if (!routes.every((r) => r.startsWith('/blog/'))) throw new Error(message);
+				},
+				// /blog/preview exists only in `npm run dev`; in a build it answers 404 and is not written.
+				handleHttpError: ({ path, status, message }) => {
+					if (path === '/blog/preview' && status === 404) return;
+					throw new Error(message);
 				}
 			},
 

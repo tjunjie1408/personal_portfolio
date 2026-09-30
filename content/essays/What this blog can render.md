@@ -63,3 +63,7 @@ fn main() {
 ## Images
 
 ![Rodin's Thinker](../assets/thinker.jpg "Drop images into content/assets. The quoted title becomes this caption.")
+
+## Diagrams
+
+![Transformer encoder block](../assets/transformer-encoder.drawio.svg "Drawn in draw.io and saved as .drawio.svg, so the same file opens again for editing. It keeps its own size and turns dark with the theme.")

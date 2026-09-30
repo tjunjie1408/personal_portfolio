@@ -3,6 +3,8 @@
 	of their opening each. `showKind` labels each row when essays and notes are mixed (tag pages).
 -->
 <script lang="ts">
+	// Summaries can carry inline formulas.
+	import 'katex/dist/katex.min.css';
 	import { formatDate, kindLabel } from '$lib/blog/format';
 	import type { Post } from '$lib/blog/types';
 
@@ -20,7 +22,8 @@
 			</p>
 			<div class="body">
 				<h3 class="title"><a href="/blog/{post.slug}">{post.title}</a></h3>
-				<p class="desc">{post.description}</p>
+				<!-- Escaped text and KaTeX output, built in posts.ts. -->
+				<p class="desc">{@html post.summary}</p>
 				{#if !compact && post.tags.length}
 					<ul class="tags mono" aria-label="Tags">
 						{#each post.tags as tag (tag)}
@@ -129,7 +132,7 @@
 
 	@media (max-width: 767px) {
 		.row {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.when {

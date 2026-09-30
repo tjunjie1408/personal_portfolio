@@ -2,21 +2,12 @@
 	Every Markdown image. Obsidian writes paths relative to the note (../assets/river.jpg), so the
 	file is looked up by name in content/assets and served optimised (avif/webp, sized, lazy).
 	The Markdown title becomes a caption: ![alt](river.jpg "Caption").
+	In a build only the images published posts use are available (src/lib/blog/vite.ts).
 -->
 <script module lang="ts">
 	import type { Picture } from '@sveltejs/enhanced-img';
-
-	const optimised = import.meta.glob<Picture>('/content/assets/**/*.{avif,heic,heif,jpeg,jpg,png,tiff,webp}', {
-		eager: true,
-		query: { enhanced: true },
-		import: 'default'
-	});
-	// GIF (animation) and SVG (vector) are served as they are.
-	const verbatim = import.meta.glob<string>('/content/assets/**/*.{gif,svg}', {
-		eager: true,
-		query: '?url',
-		import: 'default'
-	});
+	// GIF (animation) and SVG (vector) are `verbatim`, served as they are.
+	import { optimised, verbatim } from 'virtual:blog/assets';
 
 	const byName = (files: Record<string, unknown>) =>
 		new Map(Object.entries(files).map(([path, v]) => [path.slice(path.lastIndexOf('/') + 1), v]));
@@ -36,11 +27,15 @@
 		if (!picture && !url) throw new Error(`Image "${src}" is not in content/assets.`);
 		return { picture, url };
 	});
+	// Diagrams from draw.io keep their own size and follow the theme (prose.css).
+	const diagram = $derived(/\.drawio\.svg$/i.test(src.split(/[?#]/)[0]));
 </script>
 
-<figure class="img">
+<figure class="img" class:diagram>
 	{#if found.picture}
 		<enhanced:img src={found.picture} {alt} loading="lazy" decoding="async" />
+	{:else if diagram}
+		<div class="scroll"><img src={found.url} {alt} loading="lazy" decoding="async" /></div>
 	{:else}
 		<img src={found.url} {alt} loading="lazy" decoding="async" />
 	{/if}

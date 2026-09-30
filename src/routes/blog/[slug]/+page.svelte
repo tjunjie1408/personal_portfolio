@@ -2,10 +2,12 @@
 	import 'katex/dist/katex.min.css';
 	import '$lib/blog/prose.css';
 	import { formatDate, kindLabel } from '$lib/blog/format';
+	import { liveContent } from '$lib/blog/live';
 	import Seo from '$lib/components/Seo.svelte';
 	import { site } from '$lib/content';
 
 	let { data } = $props();
+	liveContent();
 	const post = $derived(data.post);
 </script>
 
@@ -26,7 +28,7 @@
 			{#if post.draft}<span class="draft">Draft, not published</span>{/if}
 		</p>
 		<h1 class="title">{post.title}</h1>
-		{#if post.kind === 'essay'}<p class="lede">{post.description}</p>{/if}
+		{#if post.kind === 'essay'}<p class="lede">{@html post.summary}</p>{/if}
 		{#if post.tags.length}
 			<ul class="tags mono" aria-label="Tags">
 				{#each post.tags as tag (tag)}
@@ -66,6 +68,8 @@
 	.post {
 		--measure: 44rem;
 		display: grid;
+		/* Without minmax the column grows to its widest line of code and the page scrolls sideways. */
+		grid-template-columns: minmax(0, 1fr);
 		gap: clamp(3rem, 6vw, 4.5rem);
 		padding-top: clamp(8rem, 18vh, 12rem);
 		padding-bottom: clamp(6rem, 12vw, 9rem);

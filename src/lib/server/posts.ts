@@ -1,19 +1,19 @@
 // The blog index, built from content/ at build time. Essays live in content/essays, notes in
 // content/notes; the folder decides the kind. Front matter is described in content/README.md.
+// In a build, `sources` holds published posts only (src/lib/blog/vite.ts).
 
+import katex from 'katex';
+import sources from 'virtual:blog/posts';
 import { dev } from '$app/environment';
+import { clip, html, pieces, plainText } from '$lib/blog/excerpt';
+import { frontmatter, isDraft } from '$lib/blog/frontmatter';
 import { slugify } from '$lib/blog/rehype';
 import type { Kind, Post } from '$lib/blog/types';
 
-const metadata = import.meta.glob<Record<string, unknown> | undefined>('/content/{essays,notes}/**/*.md', {
-	eager: true,
-	import: 'metadata'
-});
-const sources = import.meta.glob<string>('/content/{essays,notes}/**/*.md', {
-	eager: true,
-	query: '?raw',
-	import: 'default'
-});
+/** Routes beside /blog/[slug] that a post's slug would collide with. */
+const RESERVED = new Set(['preview']);
+
+const math = (tex: string) => katex.renderToString(tex, { throwOnError: false });
 
 function fail(file: string, message: string): never {
 	throw new Error(`${file}: ${message}`);
@@ -27,23 +27,6 @@ function day(value: unknown, file: string, field: string): string | undefined {
 	return d.toISOString().slice(0, 10);
 }
 
-/** Plain text of a Markdown body, for excerpts and reading time. */
-function plain(source: string): string {
-	return source
-		.replace(/^---[\s\S]*?\n---/, '')
-		.replace(/```[\s\S]*?```/g, ' ')
-		.replace(/\$\$[\s\S]*?\$\$/g, ' ')
-		.replace(/%%[\s\S]*?%%/g, ' ')
-		.replace(/<[^>]+>/g, ' ')
-		.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
-		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-		.replace(/^\s*>\s*\[![^\]]+\][+-]?/gm, ' ')
-		.replace(/^#+\s+/gm, '')
-		.replace(/[*_`~=>#|$]/g, '')
-		.replace(/\s+/g, ' ')
-		.trim();
-}
-
 const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
 
 /** About 230 English words or 450 CJK characters a minute. */
@@ -53,57 +36,57 @@ function minutes(text: string): number {
 	return Math.max(1, Math.round(words / 230 + cjk / 450));
 }
 
-function excerpt(text: string, max = 160): string {
-	const chars = [...text];
-	if (chars.length <= max) return text;
-	const cut = chars.slice(0, max).join('');
-	// Break at a word in Latin text; CJK can break anywhere.
-	const space = cut.lastIndexOf(' ');
-	return (space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,.;:，。；：、]+$/, '') + '…';
-}
+type Entry = { post: Post; meta: Record<string, unknown>; source: string };
 
-function build(): Post[] {
-	const posts: Post[] = [];
+function build(): Entry[] {
+	const entries: Entry[] = [];
 	const slugs = new Map<string, string>();
 
-	for (const [file, meta = {}] of Object.entries(metadata)) {
+	for (const [file, source] of Object.entries(sources)) {
+		const meta = frontmatter(source, file);
 		const kind: Kind = file.startsWith('/content/essays/') ? 'essay' : 'note';
 		// Obsidian treats the file name as the title, so both fall back to it.
 		const name = file.slice(file.lastIndexOf('/') + 1, -'.md'.length);
 		const title = typeof meta.title === 'string' && meta.title.trim() ? meta.title.trim() : name;
 		const slug = typeof meta.slug === 'string' && meta.slug ? slugify(meta.slug) : slugify(name);
 		if (!slug) fail(file, 'needs a "slug" (the file name has no usable characters)');
+		if (RESERVED.has(slug)) fail(file, `slug "${slug}" is taken by the /blog/${slug} page; set another "slug"`);
 		if (slugs.has(slug)) fail(file, `slug "${slug}" is already used by ${slugs.get(slug)}`);
 		slugs.set(slug, file);
 
 		const date = day(meta.date, file, 'date') ?? fail(file, 'needs a "date" (YYYY-MM-DD)');
-		const text = plain(sources[file] ?? '');
-		const draft = meta.draft === true;
+		const body = pieces(source);
+		const draft = isDraft(meta, file);
 		const description = typeof meta.description === 'string' ? meta.description.trim() : '';
 		if (kind === 'essay' && !draft && !description) fail(file, 'essays need a "description" before they publish');
+		// A written description is used whole; otherwise the text's opening is clipped.
+		const summary = description ? pieces(description) : clip(body);
 
 		const tags = meta.tags == null ? [] : Array.isArray(meta.tags) ? meta.tags : [meta.tags];
-		posts.push({
+		const post: Post = {
 			file,
 			slug,
 			kind,
 			title,
 			date,
 			updated: day(meta.updated, file, 'updated'),
-			description: description || excerpt(text),
+			description: plainText(summary),
+			summary: html(summary, math),
 			tags: [...new Set(tags.map((t) => slugify(String(t).replace(/^#/, ''))).filter(Boolean))],
 			draft,
-			minutes: minutes(text)
-		});
+			minutes: minutes(plainText(body))
+		};
+		entries.push({ post, meta, source });
 	}
 
-	return posts
-		.filter((p) => dev || !p.draft)
-		.sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
+	return entries
+		.filter(({ post }) => dev || !post.draft)
+		.sort((a, b) => b.post.date.localeCompare(a.post.date) || a.post.title.localeCompare(b.post.title));
 }
 
 // Built once per server start; in dev, Vite reloads this module when a post changes.
-const posts = build();
+const entries = build();
+const posts = entries.map((e) => e.post);
 
 export const getPosts = (kind?: Kind) => (kind ? posts.filter((p) => p.kind === kind) : posts);
 
@@ -114,6 +97,9 @@ export function neighbours(slug: string) {
 	const i = posts.findIndex((p) => p.slug === slug);
 	return { newer: posts[i - 1], older: posts[i + 1] };
 }
+
+/** Front matter and Markdown, for the checks on /blog/preview. */
+export const getSource = (slug: string) => entries.find((e) => e.post.slug === slug);
 
 export function getTags() {
 	const counts = new Map<string, number>();

@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { liveContent } from '$lib/blog/live';
 	import PostList from '$lib/components/blog/PostList.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { site } from '$lib/content';
 
 	let { data } = $props();
+	liveContent();
 </script>
 
 <Seo title="Writing / {site.name}" description="Essays and research notes by {site.name}." path="/blog" />
@@ -15,7 +17,11 @@
 		{#if data.tags.length}
 			<ul class="tags mono" aria-label="Tags">
 				{#each data.tags as { tag, count } (tag)}
-					<li><a href="/blog/tags/{tag}">#{tag}<span class="count">{count}</span></a></li>
+					<li>
+						<a href="/blog/tags/{tag}" aria-label="#{tag}, {count} {count === 1 ? 'piece' : 'pieces'}"
+							>#{tag}<span class="count" aria-hidden="true">{count}</span></a
+						>
+					</li>
 				{/each}
 			</ul>
 		{/if}
